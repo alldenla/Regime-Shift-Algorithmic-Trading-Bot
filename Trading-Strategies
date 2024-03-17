@@ -1,26 +1,52 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# 1. Load data
+# Load data
 data = pd.read_csv('backtest_data_after_regime_prediction.csv')
 
-# 2. Implement trading indicators
-def calculate_bollinger_bands(data, window=20, num_std=2):
-    data['Rolling Mean'] = data['Close'].rolling(window=window).mean()
-    data['Upper Band'] = data['Rolling Mean'] + num_std * data['Close'].rolling(window=window).std()
-    data['Lower Band'] = data['Rolling Mean'] - num_std * data['Close'].rolling(window=window).std()
-    return data
+# Calculate Bollinger Bands
+window = 20
+num_std = 2
+data['Rolling Mean'] = data['Close'].rolling(window=window).mean()
+data['Upper Band'] = data['Rolling Mean'] + num_std * data['Close'].rolling(window=window).std()
+data['Lower Band'] = data['Rolling Mean'] - num_std * data['Close'].rolling(window=window).std()
 
+# Calculate BBI (Bollinger Bands Index)
 def calculate_bbi(data, window=20):
-    data['BBI'] = (data['Close'] + data['Low'] + data['High'] + data['Open']) / 4
-    data['BBI_SMA'] = data['BBI'].rolling(window=window).mean()
+    data['BBI'] = data[['Close', 'Low', 'High', 'Open']].mean(axis=1)
+    data['BBI'] = data['BBI'].rolling(window=window).mean()
     return data
 
-# Add more functions for ENE and PBX indicators if needed
+# Calculate ENE (Elder's Force Index)
+def calculate_ene(data, window=13):
+    data['ENE'] = data['Close'] - data['Close'].shift(window)
+    return data
 
-# Apply trading indicators
-data = calculate_bollinger_bands(data)
+# Calculate indicators
 data = calculate_bbi(data)
-# Apply ENE and PBX indicators if available in your data
+data = calculate_ene(data)
 
-# Display the data with added indicators
-print(data.head())
+# Plotting
+plt.figure(figsize=(10, 6))
+
+# Plot Close Price
+plt.plot(data['Date'], data['Close'], label='Close Price')
+
+# Plot Bollinger Bands
+plt.plot(data['Date'], data['Upper Band'], label='Upper Bollinger Band', linestyle='--')
+plt.plot(data['Date'], data['Lower Band'], label='Lower Bollinger Band', linestyle='--')
+
+# Plot BBI
+plt.plot(data['Date'], data['BBI'], label='BBI')
+
+# Plot ENE
+plt.plot(data['Date'], data['ENE'], label='ENE')
+
+plt.title('Trading Indicators (2021-2023)')
+plt.xlabel('Date')
+plt.ylabel('Value')
+plt.legend()
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
