@@ -1,0 +1,26 @@
+import pandas as pd
+
+# 1. Load data
+data = pd.read_csv('backtest_data_after_regime_prediction.csv')
+
+# 2. Implement trading indicators
+def calculate_bollinger_bands(data, window=20, num_std=2):
+    data['Rolling Mean'] = data['Close'].rolling(window=window).mean()
+    data['Upper Band'] = data['Rolling Mean'] + num_std * data['Close'].rolling(window=window).std()
+    data['Lower Band'] = data['Rolling Mean'] - num_std * data['Close'].rolling(window=window).std()
+    return data
+
+def calculate_bbi(data, window=20):
+    data['BBI'] = (data['Close'] + data['Low'] + data['High'] + data['Open']) / 4
+    data['BBI_SMA'] = data['BBI'].rolling(window=window).mean()
+    return data
+
+# Add more functions for ENE and PBX indicators if needed
+
+# Apply trading indicators
+data = calculate_bollinger_bands(data)
+data = calculate_bbi(data)
+# Apply ENE and PBX indicators if available in your data
+
+# Display the data with added indicators
+print(data.head())
